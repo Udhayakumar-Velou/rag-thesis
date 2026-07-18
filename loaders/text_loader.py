@@ -1,0 +1,12 @@
+from loaders.base import BaseLoader
+
+
+class TextLoader(BaseLoader):
+    """
+    Loader for plain text (.txt) documents.
+    """
+
+    def load(self, file_path: str) -> str:
+
+        with open(file_path, "r", encoding="utf-8") as file:
+            return file.read()
