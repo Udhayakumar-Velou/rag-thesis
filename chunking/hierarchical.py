@@ -20,7 +20,11 @@ class HierarchicalChunker(BaseChunker):
     ):
         self.max_chunk_size = max_chunk_size
 
-    def split(self, text: str) -> List[Chunk]:
+    def split(
+        self,
+        text: str,
+        document_id: str = "doc_0",
+    ) -> List[Chunk]:
         """
         Split a document into hierarchical chunks.
         """
@@ -59,6 +63,7 @@ class HierarchicalChunker(BaseChunker):
                     chunks.append(
                         create_chunk(
                             chunk_id=chunk_id,
+                            document_id=document_id,
                             text=piece,
                             start=start,
                             end=end,

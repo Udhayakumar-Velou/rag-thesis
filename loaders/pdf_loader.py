@@ -1,6 +1,9 @@
+from pathlib import Path
+
 from pypdf import PdfReader
 
 from loaders.base import BaseLoader
+from models.document import Document
 
 
 class PDFLoader(BaseLoader):
@@ -8,9 +11,14 @@ class PDFLoader(BaseLoader):
     Loader for PDF documents.
     """
 
-    def load(self, file_path: str) -> str:
+    def load(self, file_path: str) -> Document:
+        """
+        Load a PDF document and return a Document object.
+        """
 
-        reader = PdfReader(file_path)
+        path = Path(file_path)
+
+        reader = PdfReader(path)
 
         text = ""
 
@@ -20,4 +28,7 @@ class PDFLoader(BaseLoader):
             if page_text:
                 text += page_text + "\n"
 
-        return text
+        return Document(
+            id=path.stem,
+            text=text.strip(),
+        )

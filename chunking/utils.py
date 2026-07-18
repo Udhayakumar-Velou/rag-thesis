@@ -3,6 +3,7 @@ from models.chunk import Chunk
 
 def create_chunk(
     chunk_id: int,
+    document_id: str,
     text: str,
     start: int,
     end: int,
@@ -16,6 +17,7 @@ def create_chunk(
 
     return Chunk(
         id=chunk_id,
+        document_id=document_id,
         text=text,
         start=start,
         end=end,

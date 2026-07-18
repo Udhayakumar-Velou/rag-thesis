@@ -17,7 +17,12 @@ class FixedChunker(BaseChunker):
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
 
-    def split(self, text: str) -> List[Chunk]:
+    def split(
+        self,
+        text: str,
+        document_id: str = "doc_0",
+    ) -> List[Chunk]:
+
         if not text.strip():
             return []
 
@@ -33,6 +38,7 @@ class FixedChunker(BaseChunker):
                 chunks.append(
                     create_chunk(
                         chunk_id=chunk_id,
+                        document_id=document_id,
                         text=chunk_text,
                         start=start,
                         end=end,

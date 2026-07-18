@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from models.chunk import Chunk
 from retrieval.base import BaseRetriever
@@ -18,10 +18,12 @@ class HybridRetriever(BaseRetriever):
         dense_retriever: DenseRetriever,
         bm25_retriever: BM25Retriever,
         rrf_k: int = 60,
+        candidate_multiplier: int = 10,
     ):
         self.dense_retriever = dense_retriever
         self.bm25_retriever = bm25_retriever
         self.rrf_k = rrf_k
+        self.candidate_multiplier = candidate_multiplier
 
     def retrieve(
         self,
@@ -29,50 +31,52 @@ class HybridRetriever(BaseRetriever):
         top_k: int = 5,
     ) -> List[Chunk]:
 
+        candidate_k = max(top_k * self.candidate_multiplier, 50)
+
         dense_results = self.dense_retriever.retrieve(
             query=query,
-            top_k=top_k,
+            top_k=candidate_k,
         )
 
         bm25_results = self.bm25_retriever.retrieve(
             query=query,
-            top_k=top_k,
+            top_k=candidate_k,
         )
 
-        fused_scores: Dict[int, float] = {}
-        documents: Dict[int, Chunk] = {}
+        fused_scores: Dict[Tuple[str, int], float] = {}
+        documents: Dict[Tuple[str, int], Chunk] = {}
 
         # Dense contribution
         for rank, chunk in enumerate(dense_results, start=1):
-            chunk_id = chunk.id
 
-            documents[chunk_id] = chunk
+            key = (chunk.document_id, chunk.id)
 
-            fused_scores[chunk_id] = (
-                fused_scores.get(chunk_id, 0)
-                + 1 / (self.rrf_k + rank)
+            documents[key] = chunk
+
+            fused_scores[key] = (
+                fused_scores.get(key, 0.0)
+                + 1.0 / (self.rrf_k + rank)
             )
 
         # BM25 contribution
         for rank, chunk in enumerate(bm25_results, start=1):
-            chunk_id = chunk.id
 
-            documents[chunk_id] = chunk
+            key = (chunk.document_id, chunk.id)
 
-            fused_scores[chunk_id] = (
-                fused_scores.get(chunk_id, 0)
-                + 1 / (self.rrf_k + rank)
+            documents[key] = chunk
+
+            fused_scores[key] = (
+                fused_scores.get(key, 0.0)
+                + 1.0 / (self.rrf_k + rank)
             )
 
         ranked = sorted(
             fused_scores.items(),
-            key=lambda x: x[1],
+            key=lambda item: item[1],
             reverse=True,
         )
 
-        results = [
-            documents[doc_id]
-            for doc_id, _ in ranked[:top_k]
+        return [
+            documents[key]
+            for key, _ in ranked[:top_k]
         ]
-
-        return results

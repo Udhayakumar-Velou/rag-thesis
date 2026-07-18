@@ -23,7 +23,11 @@ class RecursiveChunker(BaseChunker):
             chunk_overlap=chunk_overlap,
         )
 
-    def split(self, text: str) -> List[Chunk]:
+    def split(
+        self,
+        text: str,
+        document_id: str = "doc_0",
+    ) -> List[Chunk]:
         """
         Split text into recursive chunks.
         """
@@ -48,6 +52,7 @@ class RecursiveChunker(BaseChunker):
             chunks.append(
                 create_chunk(
                     chunk_id=idx,
+                    document_id=document_id,
                     text=chunk,
                     start=start,
                     end=end,

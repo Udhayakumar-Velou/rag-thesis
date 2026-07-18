@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from models.document import Document
+
 
 class BaseLoader(ABC):
     """
@@ -7,8 +9,14 @@ class BaseLoader(ABC):
     """
 
     @abstractmethod
-    def load(self, file_path: str) -> str:
+    def load(self, file_path: str) -> Document:
         """
-        Load a document and return its text.
+        Load a document.
+
+        Args:
+            file_path: Path to the input document.
+
+        Returns:
+            Document object containing the document ID and text.
         """
         pass

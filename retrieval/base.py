@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import List, Dict
+from typing import List
+
+from models.chunk import Chunk
 
 
 class BaseRetriever(ABC):
@@ -11,8 +13,8 @@ class BaseRetriever(ABC):
     def retrieve(
         self,
         query: str,
-        top_k: int = 5
-    ) -> List[Dict]:
+        top_k: int = 5,
+    ) -> List[Chunk]:
         """
         Retrieve the most relevant chunks.
         """

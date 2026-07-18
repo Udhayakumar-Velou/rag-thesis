@@ -24,7 +24,11 @@ class AdaptiveChunker(BaseChunker):
         self.max_chunk_size = max_chunk_size
         self.min_chunk_size = min_chunk_size
 
-    def split(self, text: str) -> List[Chunk]:
+    def split(
+        self,
+        text: str,
+        document_id: str = "doc_0",
+    ) -> List[Chunk]:
 
         if not text.strip():
             return []
@@ -54,6 +58,7 @@ class AdaptiveChunker(BaseChunker):
                     chunks.append(
                         create_chunk(
                             chunk_id=chunk_id,
+                            document_id=document_id,
                             text=buffer,
                             start=start,
                             end=end,
@@ -78,6 +83,7 @@ class AdaptiveChunker(BaseChunker):
                     chunks.append(
                         create_chunk(
                             chunk_id=chunk_id,
+                            document_id=document_id,
                             text=piece,
                             start=start,
                             end=end,
@@ -105,6 +111,7 @@ class AdaptiveChunker(BaseChunker):
                 chunks.append(
                     create_chunk(
                         chunk_id=chunk_id,
+                        document_id=document_id,
                         text=buffer,
                         start=start,
                         end=end,
@@ -124,6 +131,7 @@ class AdaptiveChunker(BaseChunker):
             chunks.append(
                 create_chunk(
                     chunk_id=chunk_id,
+                    document_id=document_id,
                     text=buffer,
                     start=start,
                     end=end,

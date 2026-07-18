@@ -25,7 +25,11 @@ class SemanticChunker(BaseChunker):
         self.similarity_threshold = similarity_threshold
         self.max_chunk_sentences = max_chunk_sentences
 
-    def split(self, text: str) -> List[Chunk]:
+    def split(
+        self,
+        text: str,
+        document_id: str = "doc_0",
+    ) -> List[Chunk]:
 
         if not text or not text.strip():
             return []
@@ -36,6 +40,7 @@ class SemanticChunker(BaseChunker):
             return [
                 create_chunk(
                     chunk_id=0,
+                    document_id=document_id,
                     text=sentences[0],
                     start=0,
                     end=len(sentences[0]),
@@ -73,6 +78,7 @@ class SemanticChunker(BaseChunker):
                 chunks.append(
                     create_chunk(
                         chunk_id=chunk_id,
+                        document_id=document_id,
                         text=chunk_text,
                         start=start,
                         end=end,
@@ -94,6 +100,7 @@ class SemanticChunker(BaseChunker):
             chunks.append(
                 create_chunk(
                     chunk_id=chunk_id,
+                    document_id=document_id,
                     text=chunk_text,
                     start=start,
                     end=end,
