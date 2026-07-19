@@ -1,9 +1,14 @@
 from evaluation.dataset import EvaluationDataset
 from evaluation.evaluator import Evaluator
+from evaluation.ragas_metrics import RagasEvaluator
 from experiments.configs.experiment_config import ExperimentConfig
 from experiments.results import ExperimentResult
 from loaders.beir_loader import BEIRLoader
 from retrieval.factory import RetrieverFactory
+
+from llm.answer import GeneratedAnswer
+from llm.generator import RAGGenerator
+from llm.ragas_ollama import RagasOllamaLLM
 
 
 class ExperimentRunner:
@@ -19,20 +24,17 @@ class ExperimentRunner:
         Execute the complete retrieval pipeline.
         """
 
-        # -------------------------
+        # --------------------------------------------------
         # Load BEIR dataset
-        # -------------------------
+        # --------------------------------------------------
+
         documents, queries, qrels = BEIRLoader().load(
             self.config.dataset_path
         )
 
-        # ==========================================================
-        # DEVELOPMENT MODE (Optional)
-        # ==========================================================
-        # Use 100 documents for fast development.
-        # Set to 1000 for larger testing.
-        # Set to None for the full dataset.
-        # ==========================================================
+        # --------------------------------------------------
+        # DEVELOPMENT MODE
+        # --------------------------------------------------
 
         MAX_DOCUMENTS = 100
 
@@ -69,9 +71,9 @@ class ExperimentRunner:
             print(f"Queries   : {len(queries)}")
             print("=" * 60)
 
-        # -------------------------
+        # --------------------------------------------------
         # Create evaluation dataset
-        # -------------------------
+        # --------------------------------------------------
 
         dataset = EvaluationDataset.from_beir(
             name=self.config.dataset_name,
@@ -80,9 +82,9 @@ class ExperimentRunner:
             qrels=qrels,
         )
 
-        # -------------------------
+        # --------------------------------------------------
         # Chunk documents
-        # -------------------------
+        # --------------------------------------------------
 
         print("Creating chunks...")
 
@@ -99,9 +101,9 @@ class ExperimentRunner:
         print(f"Chunks Created : {len(chunks)}")
         print("=" * 60)
 
-        # -------------------------
+        # --------------------------------------------------
         # Create retriever
-        # -------------------------
+        # --------------------------------------------------
 
         print("Building retriever...")
 
@@ -114,11 +116,63 @@ class ExperimentRunner:
         print("Retriever ready.")
         print("=" * 60)
 
-        # -------------------------
-        # Evaluate
-        # -------------------------
+        # --------------------------------------------------
+        # Create RAG Generator
+        # --------------------------------------------------
 
-        print("Running evaluation...")
+        generator = RAGGenerator(
+            retriever=retriever,
+            llm=self.config.llm,
+        )
+
+        # --------------------------------------------------
+        # Generate Answers
+        # --------------------------------------------------
+
+        print("Generating answers...")
+
+        generated_answers: list[GeneratedAnswer] = []
+
+        for sample in dataset:
+
+            generated_answer = generator.generate(
+                query=sample.query,
+                top_k=self.config.top_k,
+            )
+
+            generated_answers.append(generated_answer)
+
+        print(f"Generated {len(generated_answers)} answers.")
+        print("=" * 60)
+
+        # --------------------------------------------------
+        # RAGAS Evaluation
+        # --------------------------------------------------
+
+        print("Running RAGAS evaluation...")
+
+        ragas_llm = RagasOllamaLLM(
+            model_name="qwen2.5:3b"
+        )
+
+        ragas_evaluator = RagasEvaluator(
+        llm=ragas_llm,
+        embeddings=self.config.embedding_model,
+    )
+
+        ragas_result = ragas_evaluator.evaluate(
+            generated_answers=generated_answers,
+            dataset=dataset,
+        )
+
+        print("RAGAS evaluation completed.")
+        print("=" * 60)
+
+        # --------------------------------------------------
+        # Retrieval Evaluation
+        # --------------------------------------------------
+
+        print("Running retrieval evaluation...")
 
         evaluator = Evaluator(
             retriever=retriever,
@@ -127,12 +181,12 @@ class ExperimentRunner:
 
         evaluation_results = evaluator.evaluate(dataset)
 
-        print("Evaluation completed.")
+        print("Retrieval evaluation completed.")
         print("=" * 60)
 
-        # -------------------------
-        # Aggregate results
-        # -------------------------
+        # --------------------------------------------------
+        # Aggregate Results
+        # --------------------------------------------------
 
         return ExperimentResult.from_evaluation(
             experiment_name=self.config.name,
@@ -141,4 +195,5 @@ class ExperimentRunner:
             retriever=self.config.retriever_type,
             top_k=self.config.top_k,
             results=evaluation_results,
+            ragas_result=ragas_result,
         )

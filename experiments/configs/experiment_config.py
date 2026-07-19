@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
 from chunking.base import BaseChunker
-from retrieval.base import BaseRetriever
 from embeddings.e5_embedding import E5Embedding
+from llm.base import BaseLLM
 
 
 @dataclass
@@ -22,6 +22,7 @@ class ExperimentConfig:
     chunker: BaseChunker
     embedding_model: E5Embedding
     retriever_type: str
+    llm: BaseLLM           # <-- NEW
 
     # Retrieval settings
     top_k: int = 5
