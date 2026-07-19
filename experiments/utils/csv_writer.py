@@ -31,24 +31,28 @@ class CSVWriter:
                 "Precision",
                 "HitRate",
                 "MRR",
-                "Latency(ms)"
+                "Latency(ms)",
+                "Faithfulness",
+                "AnswerRelevancy",
             ])
 
             # Rows
             for result in results:
 
                 writer.writerow([
-                    result.experiment_name,
-                    result.dataset,
-                    result.chunker,
-                    result.retriever,
-                    result.top_k,
-                    result.num_queries,
-                    f"{result.recall:.4f}",
-                    f"{result.precision:.4f}",
-                    f"{result.hit_rate:.4f}",
-                    f"{result.mrr:.4f}",
-                    f"{result.latency_ms:.2f}",
-                ])
+                result.experiment_name,
+                result.dataset,
+                result.chunker,
+                result.retriever,
+                result.top_k,
+                result.num_queries,
+                f"{result.recall:.4f}",
+                f"{result.precision:.4f}",
+                f"{result.hit_rate:.4f}",
+                f"{result.mrr:.4f}",
+                f"{result.latency_ms:.2f}",
+                f"{result.faithfulness:.4f}",
+                f"{result.answer_relevancy:.4f}",
+            ])
 
         print(f"\nResults saved to: {output_path}")

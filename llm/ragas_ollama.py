@@ -40,22 +40,46 @@ class RagasOllamaLLM(BaseRagasLLM):
         Generate text using Ollama.
         """
 
+
+        print("\n" + "=" * 80)
+        print("PROMPT TYPE:", type(prompt))
+
+        try:
+            print("\nTO_STRING():")
+            print(prompt.to_string())
+        except Exception:
+            print("\nSTR():")
+            print(str(prompt))
+
+        print("=" * 80 + "\n")
+
+        
         response = requests.post(
             "http://localhost:11434/api/generate",
             json={
                 "model": self.model_name,
-                "prompt": str(prompt),
+                "prompt": prompt.to_string() if hasattr(prompt, "to_string") else str(prompt),
                 "stream": False,
                 "format": "json",
                 "options": {
                     "temperature": 0,
+                    "num_predict": 512,
+                    "num_ctx": 4096
                 },
             },
+            timeout=300,
         )
 
         response.raise_for_status()
 
-        text = response.json()["response"]
+        result = response.json()
+
+        print("\nRAW OLLAMA OUTPUT")
+        print("=" * 80)
+        print(result)
+        print("=" * 80)
+
+        text = result["response"]
 
         return LLMResult(
             generations=[

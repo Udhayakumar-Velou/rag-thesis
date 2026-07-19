@@ -10,8 +10,8 @@ class E5Embedding:
     """
 
     def __init__(self, model_name: str = "intfloat/e5-base-v2"):
-        # Automatically use Apple GPU (MPS) if available
-        self.device = "mps" if torch.backends.mps.is_available() else "cpu"
+        # Force CPU to free GPU memory for Ollama
+        self.device = "cpu"
 
         print(f"Loading embedding model on {self.device}...")
 

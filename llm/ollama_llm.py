@@ -27,6 +27,11 @@ class OllamaLLM(BaseLLM):
                 "model": self.model_name,
                 "prompt": prompt,
                 "stream": False,
+                "options": {
+                    "num_predict": 512,
+                    "temperature": 0,
+                    "num_ctx": 4096
+                },
             },
         )
 
